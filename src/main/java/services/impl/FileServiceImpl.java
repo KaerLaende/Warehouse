@@ -27,7 +27,11 @@ public class FileServiceImpl implements FileService {
     @Value(value = "${name.of.data.file}")
     private String getDataFileName;
 
-    SocksService socksService;
+    private final SocksService socksService;
+
+    public FileServiceImpl(SocksService socksService) {
+        this.socksService = socksService;
+    }
 
     @Override
     public boolean saveSocksToFile(String json){
@@ -45,8 +49,9 @@ public class FileServiceImpl implements FileService {
         try {
             return  Files.readString(Path.of(dataFilePath, getDataFileName));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();;
         }
+        return null;
     }
     @Override
     public boolean cleanSocksDataFile(){
@@ -55,9 +60,9 @@ public class FileServiceImpl implements FileService {
             Files.createFile(Path.of(dataFilePath, getDataFileName));
             return true;
         } catch (IOException e) {
+            e.printStackTrace();
             return  false;
         }
-
     }
 
 
@@ -75,28 +80,6 @@ public class FileServiceImpl implements FileService {
         } catch (IOException e) {
             throw new IOException();
         }
-    }
-
-
-
-    @Override
-    public Path createTempFile(String suffix){
-        try {
-            return Files.createTempFile(Path.of(dataFilePath), "tempFile", suffix);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @Override
-    public Path createSocksTextFile() throws IOException {
-        Path path = createTempFile("Socks");
-        for (Socks socks : socksService.socksList()) {
-            try (Writer writer = Files.newBufferedWriter(path, StandardOpenOption.APPEND)) {
-                writer.append(socks.toString());
-                writer.append("\n");
-            }
-        }
-        return path;
     }
 
     /**

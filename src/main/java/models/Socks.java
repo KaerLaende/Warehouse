@@ -13,8 +13,8 @@ import lombok.Data;
 public class Socks {
     private Color color;
     private Size size;
-    @Min(1)
-    @Max(100)
+    @Min(value = 1, message = "Процент содержания хлопка не может быть меньше 1")
+    @Max(value = 100, message = "Процент содержания хлопка не может быть больше 100")
     private int cottonPart;
     private int quantity;
 

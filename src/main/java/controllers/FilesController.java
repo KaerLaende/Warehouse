@@ -76,43 +76,4 @@ public class FilesController {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
-
-
-    /**
-     * Эндпоинт выгрузки носков в текстовый файл
-     * @return файл с носками.txt
-     */
-    @GetMapping("exportInText")
-    @Operation(
-            summary = "Экспорт носков в файл в формате текста"
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Успешно выгрузили текстовый файл",
-            content = {
-                    @Content(
-                            mediaType = "text/plain"
-                    )
-            }
-    )
-    public ResponseEntity<Object> getSocksTextFile() {
-        try {
-            Path path = fileService.createSocksTextFile();
-            if (Files.size(path) != 0) {
-                InputStreamResource resource = new InputStreamResource(new FileInputStream(path.toFile()));
-                return ResponseEntity.ok()
-                        .contentType(MediaType.TEXT_PLAIN)
-                        .contentLength(Files.size(path))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Socks.txt\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.noContent().build();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(e.toString());
-        }
-
-    }
-
 }

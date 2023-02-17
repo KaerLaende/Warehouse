@@ -21,10 +21,6 @@ public interface FileService {
 
     void importSocksDataFile(MultipartFile file) throws IOException;
 
-    Path createTempFile(String suffix);
-
-    Path createSocksTextFile() throws IOException;
-
     @PostConstruct
     void init();
 }

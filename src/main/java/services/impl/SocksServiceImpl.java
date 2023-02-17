@@ -21,7 +21,7 @@ import java.util.*;
 @Data
 @AllArgsConstructor
 public class SocksServiceImpl implements SocksService {
-    private static List<Socks> socksList = new ArrayList<>();
+    private List<Socks> socksList;
     private final CheckExceptionService checkExceptionService;
     private final FileService fileService;
 
@@ -36,18 +36,18 @@ public class SocksServiceImpl implements SocksService {
         if (!checkExceptionService.validate(newSocks)){
             throw new ValidationException(newSocks.toString());
         }
-        //временный носок =) что бы укоротить код в случае 'else'
-        Socks oldSocks = searchInList(newSocks.getColor(), newSocks.getSize(), newSocks.getCottonPart());
-        //если с такими парметрами носков нет - то добавляем новые носки в новую ячейку list
-        if(searchInList(newSocks.getColor(), newSocks.getSize(), newSocks.getCottonPart()) == null){
+        //ищем индекс нового носка в Списке, если такого нет вернем = -1.
+        int index = socksList.indexOf(searchInList(newSocks.getColor(), newSocks.getSize(), newSocks.getCottonPart()));
+        //если с такими парметрами носков нет (=-1) - то добавляем новые носки в новую ячейку list
+        if(index==-1){
             socksList.add(newSocks);
             return newSocks; // и возвращаем новый
         }else{
             //если носки с такими параметрами уже есть, то просто увеличиваем остаток у имеющихся
-            searchInList(newSocks.getColor(), newSocks.getSize(), newSocks.getCottonPart()).setQuantity(oldSocks.getQuantity()+newSocks.getQuantity());
+            socksList.get(index).setQuantity(socksList.get(index).getQuantity()+newSocks.getQuantity());
         }
         saveToFile(); //сохраняем в файл
-        return searchInList(newSocks.getColor(), newSocks.getSize(), newSocks.getCottonPart());
+        return socksList.get(index);
     }
 
     /**
@@ -56,7 +56,6 @@ public class SocksServiceImpl implements SocksService {
      */
     @Override
     public int getAllQuantitySocks(Color color, Size size, int cottonPartMin, int cottonPartMax) {
-        fileService.init();
         int allQuantity = 0;
         for (Socks socks : socksList) {
             if (socks.getColor().equals(color) && socks.getSize().equals(size) && socks.getCottonPart() >= cottonPartMin && socks.getCottonPart() <= cottonPartMax) {
@@ -90,14 +89,16 @@ public class SocksServiceImpl implements SocksService {
 
     @Override
     public Socks decreaseBalance(Color color, Size size, int cottonPart, int quantity){
-        if(searchInList(color, size, cottonPart)!=null){ //если такие носки найдены
+
+        int index = socksList.indexOf(searchInList(color, size, cottonPart));
+        if(index!=-1){ //если такие носки найдены
             //то делаем проверку на отрицательный баланс:
-            if (checkExceptionService.isNegativeBalance((searchInList(color, size, cottonPart).getQuantity()),quantity)){
+            if (checkExceptionService.isNegativeBalance(socksList().get(index).getQuantity(),quantity)){
                 throw new NegativeBalanceException();
             }
-            searchInList(color, size, cottonPart).setQuantity(searchInList(color, size, cottonPart).getQuantity() - quantity);
+            socksList().get(index).setQuantity(socksList().get(index).getQuantity() - quantity);
             saveToFile();
-            return searchInList(color, size, cottonPart);
+            return socksList().get(index);
         }
         return null; //не найдены
     }
